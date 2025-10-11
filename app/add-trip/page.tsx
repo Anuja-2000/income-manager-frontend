@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, useForm } from "react-hook-form"
+import { Form, useForm, SubmitHandler } from "react-hook-form"
 import { Trip } from '@/model/trip';
 import { tripSchema } from '@/validators/tripSchema';
 
@@ -22,29 +22,37 @@ export default function AddTripPage() {
   });
 
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [driver, setDriver] = useState('');
-  const [tripType, setTripType] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [distance, setDistance] = useState('');
-  const [amount, setAmount] = useState('');
-  const [duration, setDuration] = useState('');
-  const [notes, setNotes] = useState('');
+  const [formData, setFormData] = useState<CreateTripData>({
+    date: '',
+    startTime: '',
+    endTime: '',
+    distance: 0,
+    amount: 0,
+    duration: '',
+    type: '',
+    notes: '',
+    amountType: '',
+    driverId: 0,
+    vehicleId: 0,
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const id = 0;
 
-  const form = useForm<Trip>({
+
+  const form = useForm<CreateTripData>({
     resolver: zodResolver(tripSchema),
     defaultValues: {
-      date,
-      startTime,
-      endTime,
-      distance,
-      amount,
-      duration,
-      tripType,
-      driver,
-      notes,
+      date: date,
+      startTime: '',
+      endTime: '',
+      distance: 0,
+      type: '',
+      amount: 0,
+      duration: '',
+      amountType: '',
+      driverId: id,
+      vehicleId: id,
     },
   });
 
@@ -76,55 +84,61 @@ export default function AddTripPage() {
 
   // Auto-calculate duration when times change
   const handleStartTimeChange = (time: string) => {
-    setStartTime(time);
-    if (time && endTime) {
-      const calculatedDuration = calculateDuration(time, endTime);
+    setFormData((prev) => ({ ...prev, startTime: time }));
+    if (time && formData.endTime) {
+      const calculatedDuration = calculateDuration(time, formData.endTime);
       if (calculatedDuration) {
-        setDuration(calculatedDuration);
+        setFormData((prev) => ({ ...prev, duration: calculatedDuration }));
       }
     }
   };
 
   const handleEndTimeChange = (time: string) => {
-    setEndTime(time);
-    if (startTime && time) {
-      const calculatedDuration = calculateDuration(startTime, time);
+    setFormData((prev) => ({ ...prev, endTime: time }));
+    if (formData.startTime && time) {
+      const calculatedDuration = calculateDuration(formData.startTime, time);
       if (calculatedDuration) {
-        setDuration(calculatedDuration);
+        setFormData((prev) => ({ ...prev, duration: calculatedDuration }));
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<CreateTripData> = async (data) => {
     setIsSubmitting(true);
     setMessage(null);
 
     try {
       const tripData: CreateTripData = {
-        date,
-        startTime,
-        endTime: tripType === 'uber' ? endTime || '' : endTime,
-        distance: parseFloat(distance),
-        amount: parseFloat(amount),
-        duration: parseFloat(duration),
-        tripType,
-        driver,
-        notes,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        distance: formData.distance,
+        amount: formData.amount,
+        duration: formData.duration,
+        type: formData.type,
+        notes: formData.notes,
+        amountType: formData.amountType,
+        driverId: formData.driverId,
+        vehicleId: formData.vehicleId
       };
 
       //const response = await incomeApi.createTrip(tripData);
       //console.log('Trip created successfully:', response.data);
       
       // Reset form
-      setDriver('');
-      setTripType('');
-      setStartTime('');
-      setEndTime('');
-      setDistance('');
-      setAmount('');
-      setDuration('');
-      setNotes('');
+      setFormData({
+        date: '',
+        startTime: '',
+        endTime: '',
+        distance: 0,
+        amount: 0,
+        duration: '',
+        type: '',
+        amountType: '',
+        driverId: 0,
+        vehicleId: 0,
+        notes: ''
+      });
       
       setMessage({ type: 'success', text: 'Trip added successfully!' });
       
@@ -162,8 +176,7 @@ export default function AddTripPage() {
                 )}
                 <AlertDescription>{message.text}</AlertDescription>
               </Alert>
-            )}
-            <Form {...form}>
+            )}            
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Date Field */}
                 <div className="space-y-2">
@@ -176,7 +189,7 @@ export default function AddTripPage() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50"
+                  className="border-green-300 focus:border-green-600 bg-green-50 w-full"
                 />
               </div>
 
@@ -185,7 +198,7 @@ export default function AddTripPage() {
                 <Label htmlFor="driver" className="text-sm font-semibold text-green-700">
                   Select Driver
                 </Label>
-                <Select value={driver} onValueChange={setDriver} required>
+                <Select value={formData.driverId as unknown as string} onValueChange={(value) => setFormData((prev) => ({ ...prev, driverId: drivers.find(drv => drv.name === value)?.id || 0 }))} required>
                   <SelectTrigger className="border-green-300 focus:border-green-600 bg-green-50">
                     <SelectValue placeholder="Choose a driver..." />
                   </SelectTrigger>
@@ -205,7 +218,7 @@ export default function AddTripPage() {
                 <Label htmlFor="tripType" className="text-sm font-semibold text-green-700">
                   Trip Type
                 </Label>
-                <Select value={tripType} onValueChange={setTripType} required>
+                <Select value={formData.type} onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))} required>
                   <SelectTrigger className="border-green-300 focus:border-green-600 bg-green-50">
                     <SelectValue placeholder="Choose trip type..." />
                   </SelectTrigger>
@@ -226,25 +239,25 @@ export default function AddTripPage() {
                 <Input
                   type="time"
                   id="startTime"
-                  value={startTime}
+                  value={formData.startTime}
                   onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50"
+                  className="border-green-300 focus:border-green-600 bg-green-50 [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
               </div>
 
               {/* End Time */}
               <div className="space-y-2">
                 <Label htmlFor="endTime" className="text-sm font-semibold text-green-700">
-                  End Time {tripType === 'uber' && <span className="text-gray-500">(Optional)</span>}
+                  End Time {formData.type === 'uber' && <span className="text-gray-500">(Optional)</span>}
                 </Label>
                 <Input
                   type="time"
                   id="endTime"
-                  value={endTime}
+                  value={formData.endTime}
                   onChange={(e) => handleEndTimeChange(e.target.value)}
-                  required={tripType !== 'uber'}
-                  className="border-green-300 focus:border-green-600 bg-green-50"
+                  required={formData.type !== 'uber'}
+                  className="border-green-300 focus:border-green-600 bg-green-50 [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
               </div>
 
@@ -257,8 +270,8 @@ export default function AddTripPage() {
                   type="number"
                   step="0.1"
                   id="distance"
-                  value={distance}
-                  onChange={(e) => setDistance(e.target.value)}
+                  value={formData.distance}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, distance: e.target.value as unknown as number }))}
                   placeholder="Enter distance in km"
                   required
                   className="border-green-300 focus:border-green-600 bg-green-50"
@@ -274,8 +287,8 @@ export default function AddTripPage() {
                   type="number"
                   step="0.01"
                   id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  value={formData.amount}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value as unknown as number }))}
                   placeholder="Enter trip amount"
                   required
                   className="border-green-300 focus:border-green-600 bg-green-50"
@@ -286,7 +299,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label htmlFor="duration" className="text-sm font-semibold text-green-700">
                   Duration (minutes)
-                  {startTime && endTime && (
+                  {formData.startTime && formData.endTime && (
                     <span className="text-xs text-blue-600 ml-2">(Auto-calculated)</span>
                   )}
                 </Label>
@@ -294,8 +307,8 @@ export default function AddTripPage() {
                   type="number"
                   step="1"
                   id="duration"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
+                  value={formData.duration}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
                   placeholder="Enter trip duration in minutes"
                   required
                   className="border-green-300 focus:border-green-600 bg-green-50"
@@ -309,8 +322,8 @@ export default function AddTripPage() {
                 </Label>
                 <Textarea
                   id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={formData.notes}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                   rows={3}
                   placeholder="Additional notes about the trip"
                   className="border-green-300 focus:border-green-600 bg-green-50 resize-none"
@@ -326,8 +339,7 @@ export default function AddTripPage() {
               >
                 {isSubmitting ? 'Adding Trip...' : 'Add Trip'}
               </Button>
-            </form>
-            </Form>
+            </form>            
           </CardContent>
         </Card>
       </div>

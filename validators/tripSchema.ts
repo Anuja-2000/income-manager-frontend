@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { date, z } from 'zod';
 
 export const tripSchema = z.object({
-    id: z.number(),
+    date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
     startTime: z.string(),
     endTime: z.string(),
     distance: z.number(),

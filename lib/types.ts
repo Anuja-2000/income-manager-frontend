@@ -26,13 +26,15 @@ export interface Trip {
 export interface CreateTripData {
   date: string;
   startTime: string;
-  endTime?: string;
+  endTime: string;
   distance: number;
   amount: number;
-  duration: number;
-  tripType: string;
-  driver: string;
+  duration: string;
+  type: string;
   notes?: string;
+  amountType: string;
+  driverId: number;
+  vehicleId: number;
 }
 
 export interface UpdateTripData extends Partial<CreateTripData> {
