@@ -1,3 +1,4 @@
+import { create } from 'domain';
 import axiosInstance from './axios';
 
 /*
@@ -46,6 +47,8 @@ export const incomeApi = {
   getIncomeSummary: () => axiosInstance.get('/income/summary'),
 
   getDrivers: () => axiosInstance.get('/drivers'),
+
+  createTrip: (tripData: any) => axiosInstance.post('/trips/create', tripData),
 };
 
 export default incomeApi;
