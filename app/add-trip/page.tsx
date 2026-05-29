@@ -23,7 +23,6 @@ import { Alert, AlertDescription } from "../../components/ui/alert";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, useForm, SubmitHandler } from "react-hook-form";
-import { Trip } from "@/model/trip";
 import { tripSchema } from "@/validators/tripSchema";
 
 export default function AddTripPage() {
@@ -120,7 +119,6 @@ export default function AddTripPage() {
 
     try {
       const tripData = {
-        id: 0,
         startTime: formData.startTime,
         endTime: formData.endTime || "", // Send empty string if not provided
         distance: Number(formData.distance), // Ensure it's a number (Double in backend)

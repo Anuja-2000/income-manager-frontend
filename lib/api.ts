@@ -1,5 +1,6 @@
 import { create } from 'domain';
 import axiosInstance from './axios';
+import { CreateTripData } from './types';
 
 /*
 // Example API functions using the configured axios instance
@@ -48,7 +49,7 @@ export const incomeApi = {
 
   getDrivers: () => axiosInstance.get('/drivers'),
 
-  createTrip: (tripData: any) => axiosInstance.post('/trips/create', tripData),
+  createTrip: (tripData: CreateTripData) => axiosInstance.post('/trips/create', tripData),
 };
 
 export default incomeApi;
