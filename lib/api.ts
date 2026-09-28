@@ -1,6 +1,7 @@
 import { create } from 'domain';
 import axiosInstance from './axios';
 import { CreateTripData } from './types';
+import { Trip } from '@/model/trip';
 
 /*
 // Example API functions using the configured axios instance
@@ -30,7 +31,7 @@ export const apiClient = {
 // Example specific API functions for your income manager
 export const incomeApi = {
   // Get all trips
-  getTrips: () => axiosInstance.get('/trips'),
+  getTrips: () => axiosInstance.get<Trip[]>('/trips'),
   
   // Get trip by ID
   getTripById: (id: string) => axiosInstance.get(`/trips/${id}`),

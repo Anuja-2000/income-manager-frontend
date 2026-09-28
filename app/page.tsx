@@ -67,9 +67,11 @@ export default function HomePage() {
             </Link>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50" size="lg">
-                View All Trips
-              </Button>
+              <Link href="/view-trips" className="block">
+                <Button variant="outline" className="w-full border-green-300 text-green-700 hover:bg-green-50" size="lg">
+                  View All Trips
+                </Button>
+              </Link>
               <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50" size="lg">
                 Income Summary
               </Button>
