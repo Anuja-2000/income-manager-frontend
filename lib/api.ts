@@ -32,6 +32,26 @@ export const apiClient = {
 export const incomeApi = {
   // Get all trips
   getTrips: () => axiosInstance.get<Trip[]>('/trips'),
+
+  // Search trips with filters (server-side)
+  searchTrips: (params: {
+    search?: string;
+    driverId?: number;
+    type?: string;
+    amountType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    sortBy?: string;
+    sortDir?: string;
+  }) => axiosInstance.get<{
+    trips: Trip[];
+    totalCount: number;
+    totalAmount: number;
+    totalDistance: number;
+    totalDuration: number;
+  }>('/trips/search', { params }),
   
   // Get trip by ID
   getTripById: (id: string) => axiosInstance.get(`/trips/${id}`),

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { incomeApi } from "../../lib/api";
 import { Trip } from "@/model/trip";
@@ -70,6 +70,8 @@ const defaultFilters: Filters = {
   sort: "date-desc",
 };
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 const typeBadgeStyles: Record<string, string> = {
   uber: "bg-slate-900 text-white",
   pickme: "bg-amber-400 text-amber-950",
@@ -106,117 +108,100 @@ const formatDate = (value: string) => {
 };
 
 export default function ViewTripsPage() {
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [filteredTrips, setFilteredTrips] = useState<Trip[]>([]);
+  const [totalTripsCount, setTotalTripsCount] = useState(0);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [totals, setTotals] = useState({ amount: 0, distance: 0, duration: 0 });
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchData = async () => {
+  const fetchTrips = useCallback(async (currentFilters: Filters) => {
     setIsLoading(true);
     setError(null);
     try {
-      const [tripsResponse, driversResponse] = await Promise.all([
-        incomeApi.getTrips(),
-        incomeApi.getDrivers(),
-      ]);
-      setTrips(tripsResponse.data);
-      setDrivers(driversResponse.data);
+      const [sortBy, sortDir] = currentFilters.sort.split("-") as [string, string];
+      const params: Record<string, string | number | undefined> = {
+        sortBy,
+        sortDir,
+      };
+      if (currentFilters.search.trim()) params.search = currentFilters.search.trim();
+      if (currentFilters.driverId !== ALL) params.driverId = Number(currentFilters.driverId);
+      if (currentFilters.type !== ALL) params.type = currentFilters.type;
+      if (currentFilters.amountType !== ALL) params.amountType = currentFilters.amountType;
+      if (currentFilters.dateFrom) params.dateFrom = currentFilters.dateFrom;
+      if (currentFilters.dateTo) params.dateTo = currentFilters.dateTo;
+      if (currentFilters.minAmount) params.minAmount = Number(currentFilters.minAmount);
+      if (currentFilters.maxAmount) params.maxAmount = Number(currentFilters.maxAmount);
+
+      const response = await incomeApi.searchTrips(params);
+      setFilteredTrips(response.data.trips);
+      setTotals({
+        amount: response.data.totalAmount,
+        distance: response.data.totalDistance,
+        duration: response.data.totalDuration,
+      });
     } catch (err) {
       console.error("Error fetching trips:", err);
       setError("Failed to load trips. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, []);
 
-  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) =>
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const fetchDriversAndTotalCount = useCallback(async () => {
+    try {
+      const [driversResponse, allTripsResponse] = await Promise.all([
+        incomeApi.getDrivers(),
+        incomeApi.searchTrips({}),
+      ]);
+      setDrivers(driversResponse.data);
+      setTotalTripsCount(allTripsResponse.data.totalCount);
+    } catch (err) {
+      console.error("Error fetching drivers:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDriversAndTotalCount();
+    fetchTrips(defaultFilters);
+  }, [fetchTrips, fetchDriversAndTotalCount]);
+
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "search") {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        debounceTimer.current = setTimeout(() => fetchTrips(next), SEARCH_DEBOUNCE_MS);
+      } else {
+        fetchTrips(next);
+      }
+      return next;
+    });
+  };
+
+  const refreshData = () => {
+    fetchDriversAndTotalCount();
+    fetchTrips(filters);
+  };
 
   const driverNames = useMemo(
     () => new Map(drivers.map((drv) => [drv.id, drv.name])),
     [drivers]
   );
 
-  // Build filter options from the data so new types show up automatically
+  // Build filter options from loaded data plus known defaults
   const tripTypes = useMemo(
     () =>
       Array.from(
-        new Set(["uber", "pickme", "cash", "other", ...trips.map((t) => t.type)])
+        new Set(["uber", "pickme", "cash", "other", ...filteredTrips.map((t) => t.type)])
       ).filter(Boolean),
-    [trips]
+    [filteredTrips]
   );
 
   const amountTypes = useMemo(
-    () => Array.from(new Set(trips.map((t) => t.amountType))).filter(Boolean),
-    [trips]
-  );
-
-  const filteredTrips = useMemo(() => {
-    const search = filters.search.trim().toLowerCase();
-    const minAmount = filters.minAmount === "" ? null : Number(filters.minAmount);
-    const maxAmount = filters.maxAmount === "" ? null : Number(filters.maxAmount);
-
-    const result = trips.filter((trip) => {
-      if (filters.driverId !== ALL && trip.driverId.toString() !== filters.driverId)
-        return false;
-      if (filters.type !== ALL && trip.type !== filters.type) return false;
-      if (filters.amountType !== ALL && trip.amountType !== filters.amountType)
-        return false;
-      // Dates are ISO yyyy-mm-dd strings, so string comparison is correct
-      if (filters.dateFrom && trip.date < filters.dateFrom) return false;
-      if (filters.dateTo && trip.date > filters.dateTo) return false;
-      if (minAmount !== null && trip.amount < minAmount) return false;
-      if (maxAmount !== null && trip.amount > maxAmount) return false;
-
-      if (search) {
-        const haystack = [
-          trip.id,
-          trip.date,
-          formatDate(trip.date),
-          trip.type,
-          trip.amountType,
-          trip.startTime,
-          trip.endTime,
-          trip.amount,
-          trip.distance,
-          driverNames.get(trip.driverId) ?? "",
-        ]
-          .join(" ")
-          .toLowerCase();
-        if (!haystack.includes(search)) return false;
-      }
-      return true;
-    });
-
-    const [field, direction] = filters.sort.split("-") as [
-      "date" | "amount" | "distance",
-      "asc" | "desc",
-    ];
-    const factor = direction === "asc" ? 1 : -1;
-    return result.sort((a, b) => {
-      if (field === "date") {
-        const byDate = a.date.localeCompare(b.date);
-        return factor * (byDate || (a.startTime ?? "").localeCompare(b.startTime ?? ""));
-      }
-      return factor * ((a[field] ?? 0) - (b[field] ?? 0));
-    });
-  }, [trips, filters, driverNames]);
-
-  const totals = useMemo(
-    () =>
-      filteredTrips.reduce(
-        (acc, trip) => ({
-          amount: acc.amount + (trip.amount ?? 0),
-          distance: acc.distance + (trip.distance ?? 0),
-          duration: acc.duration + (Number(trip.duration) || 0),
-        }),
-        { amount: 0, distance: 0, duration: 0 }
-      ),
+    () => Array.from(new Set(filteredTrips.map((t) => t.amountType))).filter(Boolean),
     [filteredTrips]
   );
 
@@ -238,7 +223,7 @@ export default function ViewTripsPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={fetchData} disabled={isLoading}>
+            <Button variant="outline" onClick={refreshData} disabled={isLoading}>
               <RefreshCwIcon className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
@@ -410,13 +395,17 @@ export default function ViewTripsPage() {
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
               <p className="text-sm text-muted-foreground">
                 Showing <span className="font-semibold text-foreground">{filteredTrips.length}</span> of{" "}
-                <span className="font-semibold text-foreground">{trips.length}</span> trips
+                <span className="font-semibold text-foreground">{totalTripsCount}</span> trips
               </p>
               {activeFilterCount > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setFilters((prev) => ({ ...defaultFilters, sort: prev.sort }))}
+                  onClick={() => {
+                    const reset = { ...defaultFilters, sort: filters.sort };
+                    setFilters(reset);
+                    fetchTrips(reset);
+                  }}
                 >
                   <XIcon className="h-4 w-4 mr-1" />
                   Clear filters ({activeFilterCount})
@@ -427,7 +416,7 @@ export default function ViewTripsPage() {
         </Card>
 
         {/* Summary of filtered trips */}
-        {!isLoading && !error && trips.length > 0 && (
+        {!isLoading && !error && totalTripsCount > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Trips", value: filteredTrips.length.toString(), icon: CarIcon },
@@ -454,7 +443,7 @@ export default function ViewTripsPage() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between gap-4 w-full">
               <span>{error}</span>
-              <Button size="sm" variant="outline" onClick={fetchData}>
+              <Button size="sm" variant="outline" onClick={refreshData}>
                 Retry
               </Button>
             </AlertDescription>
@@ -479,7 +468,7 @@ export default function ViewTripsPage() {
           <Card className="shadow-sm">
             <CardContent className="text-center py-12 text-muted-foreground">
               <CarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              {trips.length === 0 ? (
+              {totalTripsCount === 0 ? (
                 <>
                   <p className="text-lg">No trips recorded yet</p>
                   <Link href="/add-trip">
@@ -495,7 +484,10 @@ export default function ViewTripsPage() {
                   <Button
                     variant="outline"
                     className="mt-4"
-                    onClick={() => setFilters(defaultFilters)}
+                    onClick={() => {
+                      setFilters(defaultFilters);
+                      fetchTrips(defaultFilters);
+                    }}
                   >
                     Clear filters
                   </Button>
