@@ -167,11 +167,11 @@ export default function AddTripPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 to-green-800 p-4">
+    <div className="min-h-screen px-4 py-8">
       <div className="max-w-md mx-auto">
-        <Card className="shadow-2xl border-0">
+        <Card className="shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">
+            <CardTitle className="text-2xl font-semibold tracking-tight">
               Add New Trip
             </CardTitle>
           </CardHeader>
@@ -196,7 +196,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="date"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Date
                 </Label>
@@ -206,7 +206,7 @@ export default function AddTripPage() {
                   value={formData.date}
                   onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50 w-full"
+                  className="w-full"
                 />
               </div>
 
@@ -214,7 +214,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="driver"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Select Driver
                 </Label>
@@ -228,7 +228,7 @@ export default function AddTripPage() {
                   }
                   required
                 >
-                  <SelectTrigger className="border-green-300 focus:border-green-600 bg-green-50">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a driver..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,7 +250,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="tripType"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Trip Type
                 </Label>
@@ -261,7 +261,7 @@ export default function AddTripPage() {
                   }
                   required
                 >
-                  <SelectTrigger className="border-green-300 focus:border-green-600 bg-green-50">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose trip type..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -277,7 +277,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="startTime"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Start Time
                 </Label>
@@ -287,7 +287,7 @@ export default function AddTripPage() {
                   value={formData.startTime}
                   onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50 [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  className="[&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
               </div>
 
@@ -295,11 +295,11 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="endTime"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   End Time{" "}
                   {formData.type === "uber" && (
-                    <span className="text-gray-500">(Optional)</span>
+                    <span className="text-muted-foreground">(Optional)</span>
                   )}
                 </Label>
                 <Input
@@ -308,7 +308,7 @@ export default function AddTripPage() {
                   value={formData.endTime}
                   onChange={(e) => handleEndTimeChange(e.target.value)}
                   required={formData.type !== "uber"}
-                  className="border-green-300 focus:border-green-600 bg-green-50 [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  className="[&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="distance"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Distance (km)
                 </Label>
@@ -332,7 +332,6 @@ export default function AddTripPage() {
                   }
                   placeholder="Enter distance in km"
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50"
                 />
               </div>
 
@@ -340,7 +339,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="amount"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Amount
                 </Label>
@@ -356,7 +355,6 @@ export default function AddTripPage() {
                   }
                   placeholder="Enter trip amount"
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50"
                 />
               </div>
 
@@ -364,11 +362,11 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="duration"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Duration (minutes)
                   {formData.startTime && formData.endTime && (
-                    <span className="text-xs text-blue-600 ml-2">
+                    <span className="text-xs text-muted-foreground ml-2">
                       (Auto-calculated)
                     </span>
                   )}
@@ -386,7 +384,6 @@ export default function AddTripPage() {
                   }
                   placeholder="Enter trip duration in minutes"
                   required
-                  className="border-green-300 focus:border-green-600 bg-green-50"
                 />
               </div>
 
@@ -394,7 +391,7 @@ export default function AddTripPage() {
               <div className="space-y-2">
                 <Label
                   htmlFor="notes"
-                  className="text-sm font-semibold text-green-700"
+                  className="text-sm font-medium"
                 >
                   Notes (Optional)
                 </Label>
@@ -406,7 +403,7 @@ export default function AddTripPage() {
                   }
                   rows={3}
                   placeholder="Additional notes about the trip"
-                  className="border-green-300 focus:border-green-600 bg-green-50 resize-none"
+                  className="resize-none"
                 />
               </div>
 
@@ -414,7 +411,7 @@ export default function AddTripPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-green-700 hover:bg-green-800 disabled:bg-green-400 text-white font-bold shadow-lg hover:shadow-xl"
+                className="w-full"
                 size="lg"
               >
                 {isSubmitting ? "Adding Trip..." : "Add Trip"}

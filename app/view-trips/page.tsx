@@ -19,12 +19,10 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
 } from "../../components/ui/card";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import {
   AlertCircle,
-  ArrowLeftIcon,
   CalendarIcon,
   CarIcon,
   ClockIcon,
@@ -73,9 +71,9 @@ const defaultFilters: Filters = {
 };
 
 const typeBadgeStyles: Record<string, string> = {
-  uber: "bg-gray-900 text-white",
-  pickme: "bg-yellow-400 text-yellow-950",
-  cash: "bg-green-600 text-white",
+  uber: "bg-slate-900 text-white",
+  pickme: "bg-amber-400 text-amber-950",
+  cash: "bg-emerald-600 text-white",
   other: "bg-slate-200 text-slate-800",
 };
 
@@ -226,61 +224,38 @@ export default function ViewTripsPage() {
     .filter((key) => key !== "sort")
     .filter((key) => filters[key] !== defaultFilters[key]).length;
 
-  const inputClass = "border-green-300 focus:border-green-600 bg-green-50";
+  const inputClass = "bg-card";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 to-green-800 p-4">
+    <div className="min-h-screen px-4 py-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <Card className="border-0 shadow-xl">
-          <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Link href="/">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="border-green-300 text-green-700 hover:bg-green-50"
-                  aria-label="Back to dashboard"
-                >
-                  <ArrowLeftIcon className="h-4 w-4" />
-                </Button>
-              </Link>
-              <div>
-                <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">
-                  All Trips
-                </CardTitle>
-                <p className="text-green-600 text-sm mt-1">
-                  Search, filter and review every recorded trip
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={fetchData}
-                disabled={isLoading}
-                className="border-green-300 text-green-700 hover:bg-green-50"
-              >
-                <RefreshCwIcon
-                  className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
-                />
-                Refresh
-              </Button>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">All Trips</h1>
+            <p className="text-muted-foreground mt-1">
+              Search, filter and review every recorded trip
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={fetchData} disabled={isLoading}>
+              <RefreshCwIcon className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button asChild>
               <Link href="/add-trip">
-                <Button className="bg-green-700 hover:bg-green-800 text-white font-bold">
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Add Trip
-                </Button>
+                <PlusIcon className="h-4 w-4" />
+                Add Trip
               </Link>
-            </div>
-          </CardHeader>
-        </Card>
+            </Button>
+          </div>
+        </div>
 
         {/* Search & Filters */}
-        <Card className="border-0 shadow-xl">
+        <Card className="shadow-sm">
           <CardContent className="space-y-4">
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 value={filters.search}
@@ -292,7 +267,7 @@ export default function ViewTripsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-green-700">Driver</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Driver</Label>
                 <Select
                   value={filters.driverId}
                   onValueChange={(value) => updateFilter("driverId", value)}
@@ -312,7 +287,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-green-700">Trip Type</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Trip Type</Label>
                 <Select
                   value={filters.type}
                   onValueChange={(value) => updateFilter("type", value)}
@@ -332,7 +307,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-green-700">Payment</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Payment</Label>
                 <Select
                   value={filters.amountType}
                   onValueChange={(value) => updateFilter("amountType", value)}
@@ -352,7 +327,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-green-700">Sort By</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Sort By</Label>
                 <Select
                   value={filters.sort}
                   onValueChange={(value) => updateFilter("sort", value as SortKey)}
@@ -372,7 +347,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dateFrom" className="text-sm font-semibold text-green-700">
+                <Label htmlFor="dateFrom" className="text-xs font-medium text-muted-foreground">
                   From Date
                 </Label>
                 <Input
@@ -386,7 +361,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dateTo" className="text-sm font-semibold text-green-700">
+                <Label htmlFor="dateTo" className="text-xs font-medium text-muted-foreground">
                   To Date
                 </Label>
                 <Input
@@ -400,7 +375,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="minAmount" className="text-sm font-semibold text-green-700">
+                <Label htmlFor="minAmount" className="text-xs font-medium text-muted-foreground">
                   Min Amount
                 </Label>
                 <Input
@@ -416,7 +391,7 @@ export default function ViewTripsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="maxAmount" className="text-sm font-semibold text-green-700">
+                <Label htmlFor="maxAmount" className="text-xs font-medium text-muted-foreground">
                   Max Amount
                 </Label>
                 <Input
@@ -432,17 +407,16 @@ export default function ViewTripsPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-green-100">
-              <p className="text-sm text-green-700">
-                Showing <span className="font-bold">{filteredTrips.length}</span> of{" "}
-                <span className="font-bold">{trips.length}</span> trips
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
+              <p className="text-sm text-muted-foreground">
+                Showing <span className="font-semibold text-foreground">{filteredTrips.length}</span> of{" "}
+                <span className="font-semibold text-foreground">{trips.length}</span> trips
               </p>
               {activeFilterCount > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setFilters((prev) => ({ ...defaultFilters, sort: prev.sort }))}
-                  className="text-green-700 hover:bg-green-50"
                 >
                   <XIcon className="h-4 w-4 mr-1" />
                   Clear filters ({activeFilterCount})
@@ -461,13 +435,13 @@ export default function ViewTripsPage() {
               { label: "Total Distance", value: `${totals.distance.toFixed(1)} km`, icon: RouteIcon },
               { label: "Total Duration", value: formatDuration(totals.duration), icon: ClockIcon },
             ].map(({ label, value, icon: Icon }) => (
-              <Card key={label} className="border-0 shadow-lg py-4">
+              <Card key={label} className="shadow-sm py-4">
                 <CardContent className="px-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-green-700">{label}</p>
-                    <Icon className="h-4 w-4 text-green-600" />
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <Icon className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <p className="text-xl md:text-2xl font-bold text-green-800 mt-1">{value}</p>
+                  <p className="text-xl md:text-2xl font-semibold mt-1">{value}</p>
                 </CardContent>
               </Card>
             ))}
@@ -491,25 +465,25 @@ export default function ViewTripsPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="border-0 shadow-lg animate-pulse">
+              <Card key={i} className="shadow-sm animate-pulse">
                 <CardContent className="space-y-3">
-                  <div className="h-4 bg-green-100 rounded w-1/2" />
-                  <div className="h-8 bg-green-100 rounded w-2/3" />
-                  <div className="h-3 bg-green-100 rounded w-full" />
-                  <div className="h-3 bg-green-100 rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-8 bg-muted rounded w-2/3" />
+                  <div className="h-3 bg-muted rounded w-full" />
+                  <div className="h-3 bg-muted rounded w-3/4" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : !error && filteredTrips.length === 0 ? (
-          <Card className="border-0 shadow-xl">
-            <CardContent className="text-center py-12 text-green-600">
+          <Card className="shadow-sm">
+            <CardContent className="text-center py-12 text-muted-foreground">
               <CarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
               {trips.length === 0 ? (
                 <>
                   <p className="text-lg">No trips recorded yet</p>
                   <Link href="/add-trip">
-                    <Button className="mt-4 bg-green-700 hover:bg-green-800 text-white">
+                    <Button className="mt-4">
                       <PlusIcon className="h-4 w-4 mr-2" />
                       Add your first trip
                     </Button>
@@ -520,7 +494,7 @@ export default function ViewTripsPage() {
                   <p className="text-lg">No trips match your filters</p>
                   <Button
                     variant="outline"
-                    className="mt-4 border-green-300 text-green-700 hover:bg-green-50"
+                    className="mt-4"
                     onClick={() => setFilters(defaultFilters)}
                   >
                     Clear filters
@@ -534,10 +508,10 @@ export default function ViewTripsPage() {
             {filteredTrips.map((trip) => (
               <Card
                 key={trip.id}
-                className="border-0 shadow-lg hover:shadow-2xl hover:-translate-y-0.5 transition-all gap-4"
+                className="shadow-sm hover:shadow-md hover:border-primary/30 transition-all gap-4"
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                  <div className="flex items-center gap-2 text-sm text-green-700">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarIcon className="h-4 w-4" />
                     <span className="font-medium">{formatDate(trip.date)}</span>
                   </div>
@@ -549,36 +523,36 @@ export default function ViewTripsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-end justify-between">
-                    <p className="text-2xl font-bold text-green-800">
+                    <p className="text-2xl font-semibold">
                       {formatAmount(trip.amount)}
                     </p>
                     {trip.amountType && (
-                      <Badge variant="outline" className="border-green-300 text-green-700">
+                      <Badge variant="outline" className="text-muted-foreground">
                         {capitalize(trip.amountType)}
                       </Badge>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <ClockIcon className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <ClockIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span>
                         {trip.startTime || "--:--"}
                         {trip.endTime ? ` – ${trip.endTime}` : ""}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <RouteIcon className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <RouteIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span>{(trip.distance ?? 0).toFixed(1)} km</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <UserIcon className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <UserIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span className="truncate">
                         {driverNames.get(trip.driverId) ?? `Driver #${trip.driverId}`}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <CarIcon className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <CarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                       <span>{formatDuration(Number(trip.duration))}</span>
                     </div>
                   </div>
